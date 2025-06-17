@@ -9,12 +9,16 @@ import (
 	"strconv"
 	"syscall"
 
+	"github.com/WelintonJunior/identity-access-management-go/cmd/middlewares"
+	_ "github.com/WelintonJunior/identity-access-management-go/docs"
 	infraestructure "github.com/WelintonJunior/identity-access-management-go/infraestructure/postgres"
 	postgres "github.com/WelintonJunior/identity-access-management-go/infraestructure/postgres"
 	redis "github.com/WelintonJunior/identity-access-management-go/infraestructure/redis"
+	"github.com/WelintonJunior/identity-access-management-go/routes"
 	"github.com/WelintonJunior/identity-access-management-go/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/swagger"
 	"github.com/spf13/cobra"
 )
 
@@ -83,6 +87,23 @@ func SetupApp(ctx context.Context) *fiber.App {
 	} else {
 		fmt.Println("Conectado ao Redis com sucesso!")
 	}
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"success": true,
+			"message": "You are at the endpoint",
+		})
+	})
+
+	app.Get("/swagger/*", swagger.HandlerDefault)
+
+	authRoutes := app.Group("api/v1")
+
+	routes.AuthRoutes(authRoutes)
+
+	apiV1 := app.Group("api/v1", middlewares.JwtAuth())
+	routes.UserRoutes(apiV1)
+	routes.ProductRoutes(apiV1)
 
 	return app
 }

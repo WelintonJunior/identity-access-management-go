@@ -31,6 +31,7 @@ func (r *PostgresMigrateService) MigrateApply() error {
 		&types.Role{},
 		&types.RolePermission{},
 		&types.UserRole{},
+		&types.Product{},
 	)
 }
 
@@ -43,5 +44,6 @@ func (r *PostgresMigrateService) MigrateRevert() error {
 		&types.Role{},
 		&types.RolePermission{},
 		&types.UserRole{},
+		&types.Product{},
 	)
 }
