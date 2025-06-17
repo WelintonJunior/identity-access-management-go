@@ -11,48 +11,38 @@ type HasID interface {
 	GetID() uuid.UUID
 }
 
-func CreateRepoRegister[T HasID](register T) (uuid.UUID, error) {
-	if err := infraestructure.Db.Create(&register).Error; err != nil {
+func CreateRepoRegister[T HasID](record T) (uuid.UUID, error) {
+	if err := infraestructure.Db.Create(&record).Error; err != nil {
 		return uuid.Nil, err
 	}
-	return register.GetID(), nil
+	return record.GetID(), nil
 }
 
 func ListRepoRegisters[T any](filters map[string]interface{}) ([]T, error) {
-	var registers []T
+	var records []T
 
-	result := infraestructure.Db.Where(filters).Find(&registers)
-	if result.Error != nil {
-		return nil, result.Error
+	if err := infraestructure.Db.Where(filters).Find(&records).Error; err != nil {
+		return nil, err
 	}
 
-	return registers, nil
+	return records, nil
 }
 
 func GetRepoRegisterById[T any](id uuid.UUID) (T, error) {
-	var register T
+	var record T
 
-	// 	query := infraestructure.Db
-	// for _, preload := range preloads {
-	// 	query = query.Preload(preload)
-	// }
-
-	// result := query.Where("id = ?", id).First(&register)
-
-	result := infraestructure.Db.Where("id = ?", id).First(&register)
-
-	if result.Error != nil {
+	if err := infraestructure.Db.Where("id = ?", id).First(&record).Error; err != nil {
 		var zero T
-		return zero, result.Error
+		return zero, err
 	}
 
-	return register, nil
+	return record, nil
 }
 
-func UpdateRepoRegisterById[T any](id uuid.UUID, updatedRegister T) (T, error) {
+func UpdateRepoRegisterById[T any](id uuid.UUID, updated T) (T, error) {
 	var empty T
-	result := infraestructure.Db.Model(&empty).Where("id = ?", id).Updates(updatedRegister)
 
+	result := infraestructure.Db.Model(&empty).Where("id = ?", id).Updates(updated)
 	if result.Error != nil {
 		var zero T
 		return zero, result.Error
@@ -60,22 +50,22 @@ func UpdateRepoRegisterById[T any](id uuid.UUID, updatedRegister T) (T, error) {
 
 	if result.RowsAffected == 0 {
 		var zero T
-		return zero, fmt.Errorf("registro com id %d não encontrado", id)
+		return zero, fmt.Errorf("record with id %s not found", id)
 	}
 
-	return updatedRegister, nil
+	return updated, nil
 }
 
 func DeleteRepoRegisterById[T any](id uuid.UUID) error {
-	var register T
-	result := infraestructure.Db.Where("id = ?", id).Delete(&register)
+	var record T
 
+	result := infraestructure.Db.Where("id = ?", id).Delete(&record)
 	if result.Error != nil {
 		return result.Error
 	}
 
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("registro não encontrado para o id: %d", id)
+		return fmt.Errorf("record not found for id: %s", id)
 	}
 
 	return nil

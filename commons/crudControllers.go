@@ -11,20 +11,24 @@ import (
 func CreateControllerRegister[T HasID]() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var request T
-
 		if err := c.BodyParser(&request); err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"errors": err})
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"error":   "Invalid request body",
+			})
 		}
 
 		id, err := CreateRepoRegister(request)
-
 		if err != nil {
-			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": fmt.Sprintf("failed to find registers, %v", err)})
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+				"success": false,
+				"error":   fmt.Sprintf("Failed to create record: %v", err),
+			})
 		}
 
-		return c.Status(http.StatusOK).JSON(fiber.Map{
+		return c.Status(http.StatusCreated).JSON(fiber.Map{
 			"id":      id,
-			"message": "success",
+			"message": "Record created successfully",
 			"success": true,
 		})
 	}
@@ -32,25 +36,18 @@ func CreateControllerRegister[T HasID]() fiber.Handler {
 
 func ListControllerRegisters[T any]() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		userFilter := getGenericFilters(c)
+		filters := getGenericFilters(c)
 
-		registers, err := ListRepoRegisters[T](userFilter)
-
+		records, err := ListRepoRegisters[T](filters)
 		if err != nil {
 			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
-				"error": fmt.Sprintf("failed to find registers, %v", err),
-			})
-		}
-
-		if len(registers) == 0 {
-			return c.Status(fiber.StatusOK).JSON(fiber.Map{
-				"message": "Nenhum registro encontrado",
-				"success": true,
+				"success": false,
+				"error":   fmt.Sprintf("Failed to list records: %v", err),
 			})
 		}
 
 		return c.Status(http.StatusOK).JSON(fiber.Map{
-			"message": registers,
+			"data":    records,
 			"success": true,
 		})
 	}
@@ -58,23 +55,24 @@ func ListControllerRegisters[T any]() fiber.Handler {
 
 func GetControllerRegisterById[T any]() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-
-		idParam := c.Params("id")
-
-		strUUID, err := uuid.Parse(idParam)
-
+		id, err := uuid.Parse(c.Params("id"))
 		if err != nil {
-			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": fmt.Sprintf("failed to parse uuid, %v", err)})
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"error":   "Invalid UUID format",
+			})
 		}
 
-		register, err := GetRepoRegisterById[T](strUUID)
-
+		record, err := GetRepoRegisterById[T](id)
 		if err != nil {
-			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": fmt.Sprintf("failed to find registers, %v", err)})
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+				"success": false,
+				"error":   fmt.Sprintf("Failed to retrieve record: %v", err),
+			})
 		}
 
 		return c.Status(http.StatusOK).JSON(fiber.Map{
-			"message": register,
+			"data":    record,
 			"success": true,
 		})
 	}
@@ -82,53 +80,58 @@ func GetControllerRegisterById[T any]() fiber.Handler {
 
 func UpdateControllerRegisterById[T any]() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		idParam := c.Params("id")
-
-		strUUID, err := uuid.Parse(idParam)
-
+		id, err := uuid.Parse(c.Params("id"))
 		if err != nil {
-			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": fmt.Sprintf("failed to parse uuid, %v", err)})
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"error":   "Invalid UUID format",
+			})
 		}
 
 		var request T
 		if err := c.BodyParser(&request); err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"errors": err})
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"error":   "Invalid request body",
+			})
 		}
 
-		register, err := UpdateRepoRegisterById(strUUID, request)
-
+		updated, err := UpdateRepoRegisterById(id, request)
 		if err != nil {
-			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": fmt.Sprintf("failed to find registers, %v", err)})
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+				"success": false,
+				"error":   fmt.Sprintf("Failed to update record: %v", err),
+			})
 		}
 
 		return c.Status(http.StatusOK).JSON(fiber.Map{
-			"message": register,
+			"data":    updated,
+			"message": "Record updated successfully",
 			"success": true,
 		})
-
 	}
 }
 
 func DeleteControllerRegisterById[T any]() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		idParam := c.Params("id")
-
-		strUUID, err := uuid.Parse(idParam)
-
+		id, err := uuid.Parse(c.Params("id"))
 		if err != nil {
-			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": fmt.Sprintf("failed to parse uuid, %v", err)})
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"error":   "Invalid UUID format",
+			})
 		}
 
-		err = DeleteRepoRegisterById[T](strUUID)
-
-		if err != nil {
-			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": fmt.Sprintf("failed to find registers, %v", err)})
+		if err := DeleteRepoRegisterById[T](id); err != nil {
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+				"success": false,
+				"error":   fmt.Sprintf("Failed to delete record: %v", err),
+			})
 		}
 
 		return c.Status(http.StatusOK).JSON(fiber.Map{
-			"message": "success",
+			"message": "Record deleted successfully",
 			"success": true,
 		})
-
 	}
 }

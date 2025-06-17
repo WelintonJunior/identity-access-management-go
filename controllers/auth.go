@@ -13,37 +13,36 @@ import (
 )
 
 var (
-	ErrMalFormedRequest = "Dados inválidos"
+	ErrMalformedRequest = "Invalid request payload"
 )
 
-// @Summary 	Login do usuário
-// @Description Gera access e refresh token
-// @Tags 		Auth
-// @Accept 		json
-// @Produce 	json
-// @Param 		request body types.User true "Credenciais"
-// @Success 	200 {object} map[string]string
-// @Failure 	400 {object} map[string]string
-// @Failure 	500 {object} map[string]string
-// @Router 		/api/v1/auth/login [post]
+// @Summary      User login
+// @Description  Generates access and refresh tokens
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        request body types.User true "Credentials"
+// @Success      200 {object} map[string]string
+// @Failure      400 {object} map[string]string
+// @Failure      401 {object} map[string]string
+// @Failure      500 {object} map[string]string
+// @Router       /api/v1/auth/login [post]
 func Login() fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		var req types.User
 
-		var request types.User
-
-		if err := c.BodyParser(&request); err != nil {
+		if err := c.BodyParser(&req); err != nil {
 			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 				"success": false,
-				"error":   ErrMalFormedRequest,
+				"error":   ErrMalformedRequest,
 			})
 		}
 
-		accessToken, refreshToken, err := services.VerifyUser(request)
-
+		accessToken, refreshToken, err := services.VerifyUser(req)
 		if err != nil {
 			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
 				"success": false,
-				"error":   "Email ou senha não conferem",
+				"error":   "Email or password is incorrect",
 			})
 		}
 
@@ -51,7 +50,7 @@ func Login() fiber.Handler {
 			Name:     "refresh_token",
 			Value:    refreshToken,
 			HTTPOnly: true,
-			Secure:   false,
+			Secure:   true,
 			Path:     "/",
 			Expires:  time.Now().Add(7 * 24 * time.Hour),
 		})
@@ -63,12 +62,12 @@ func Login() fiber.Handler {
 	}
 }
 
-// @Summary      Cadastro do usuário
-// @Description  Cria um novo registro de usuário no banco de dados
+// @Summary      User registration
+// @Description  Creates a new user in the database
 // @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        request  body      types.User  true  "Dados do usuário"
+// @Param        request  body      types.User  true  "User data"
 // @Success      201      {object}  map[string]interface{}
 // @Failure      400      {object}  map[string]string
 // @Failure      500      {object}  map[string]string
@@ -80,7 +79,7 @@ func Register() fiber.Handler {
 		if err := c.BodyParser(&req); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"success": false,
-				"error":   "invalid request body",
+				"error":   ErrMalformedRequest,
 			})
 		}
 
@@ -91,24 +90,23 @@ func Register() fiber.Handler {
 			IsActive: true,
 		}
 
-		userRepository := repository.NewUserRepository()
-
-		if err := userRepository.CreateUser(user); err != nil {
+		userRepo := repository.NewUserRepository()
+		if err := userRepo.CreateUser(user); err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"success": false,
-				"error":   err.Error(),
+				"error":   fmt.Sprintf("failed to create user: %v", err),
 			})
 		}
 
-		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-			"message": "user created",
+		return c.Status(http.StatusCreated).JSON(fiber.Map{
+			"message": "User created successfully",
 			"success": true,
 		})
 	}
 }
 
-// @Summary      Atualiza o access token
-// @Description  Gera novo access token com base no refresh token armazenado no cookie HttpOnly
+// @Summary      Refresh access token
+// @Description  Generates new access token using the refresh token in HttpOnly cookie
 // @Tags         Auth
 // @Accept       json
 // @Produce      json
@@ -122,7 +120,7 @@ func RefreshToken() fiber.Handler {
 		if refreshToken == "" {
 			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
 				"success": false,
-				"error":   "token ausente",
+				"error":   "Missing refresh token",
 			})
 		}
 
@@ -130,29 +128,28 @@ func RefreshToken() fiber.Handler {
 		if err != nil {
 			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
 				"success": false,
-				"error":   "token inválido",
+				"error":   "Invalid refresh token",
 			})
 		}
 
-		authTokenRepository := repository.NewAuthTokenRepository()
-		storedToken, err := authTokenRepository.GetRefreshToken(c.Context(), "refresh-user:"+email)
+		tokenRepo := repository.NewAuthTokenRepository()
+		storedToken, err := tokenRepo.GetRefreshToken(c.Context(), "refresh-user:"+email)
 		if err != nil || storedToken != refreshToken {
 			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
 				"success": false,
-				"error":   "token inválido ou expirado",
+				"error":   "Invalid or expired refresh token",
 			})
 		}
 
 		newAccessToken, newRefreshToken, err := auth.GenerateTokens(email)
-
 		if err != nil {
 			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 				"success": false,
-				"error":   fmt.Sprintf("failed to generate token, %v", err),
+				"error":   fmt.Sprintf("Failed to generate tokens: %v", err),
 			})
 		}
 
-		_ = authTokenRepository.SetRefreshToken(c.Context(), "refresh-user:"+email, newRefreshToken, 7*24*time.Hour)
+		_ = tokenRepo.SetRefreshToken(c.Context(), "refresh-user:"+email, newRefreshToken, 7*24*time.Hour)
 
 		c.Cookie(&fiber.Cookie{
 			Name:     "refresh_token",

@@ -6,7 +6,7 @@ import (
 )
 
 func ProductRoutes(route fiber.Router) {
-	productGroup := route.Group("/product")
+	productGroup := route.Group("/products")
 	productGroup.Post("/", controllers.CreateProduct())
 	productGroup.Get("/", controllers.ListProducts())
 	productGroup.Get("/:id", controllers.GetProductById())

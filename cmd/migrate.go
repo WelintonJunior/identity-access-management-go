@@ -13,11 +13,10 @@ var option string
 
 var migrateCmd = &cobra.Command{
 	Use:   "migrate",
-	Short: "Comando para aplicar/remover atualizações do banco",
-	Long:  ">",
+	Short: "Apply or rollback database migrations",
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := utils.LoadEnvMem(); err != nil {
-			panic(err)
+			log.Fatalf("Failed to load environment variables: %v", err)
 		}
 
 		sqlConf := infraestructure.SqlConfig{
@@ -28,34 +27,30 @@ var migrateCmd = &cobra.Command{
 			Port:     os.Getenv("DB_PORT"),
 		}
 
-		gormDb, err := infraestructure.NewSqlDbConnection(sqlConf)
-
+		db, err := infraestructure.NewSqlDbConnection(sqlConf)
 		if err != nil {
-			panic(err)
+			log.Fatalf("Failed to connect to database: %v", err)
 		}
 
-		sqlService, err := infraestructure.NewPostgresMigrateService(gormDb)
-
+		migrationService, err := infraestructure.NewPostgresMigrateService(db)
 		if err != nil {
-			log.Fatalf("Erro ao criar serviço para execução das migrations: %v", err)
+			log.Fatalf("Failed to initialize migration service: %v", err)
 		}
 
-		if option == "up" {
-			if err := sqlService.MigrateApply(); err != nil {
-				log.Println("Erro ao executar migrate apply")
+		switch option {
+		case "up":
+			if err := migrationService.MigrateApply(); err != nil {
+				log.Fatalf("Failed to apply migrations: %v", err)
 			}
-
-			return
-		}
-
-		if option == "down" {
-			if err := sqlService.MigrateRevert(); err != nil {
-				log.Println("Erro ao executar migrate revert")
+			log.Println("Migrations applied successfully")
+		case "down":
+			if err := migrationService.MigrateRevert(); err != nil {
+				log.Fatalf("Failed to revert migrations: %v", err)
 			}
-
-			return
+			log.Println("Migrations reverted successfully")
+		default:
+			log.Println("Invalid operation. Use --operation=up or --operation=down")
 		}
-
 	},
 }
 

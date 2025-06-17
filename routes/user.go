@@ -6,7 +6,7 @@ import (
 )
 
 func UserRoutes(route fiber.Router) {
-	userGroup := route.Group("/user")
+	userGroup := route.Group("/users")
 	userGroup.Get("/", controllers.ListUsers())
 	userGroup.Get("/:id", controllers.GetUserById())
 	userGroup.Put("/:id", controllers.UpdateUserById())

@@ -12,7 +12,6 @@ import (
 	"github.com/WelintonJunior/identity-access-management-go/cmd/middlewares"
 	_ "github.com/WelintonJunior/identity-access-management-go/docs"
 	infraestructure "github.com/WelintonJunior/identity-access-management-go/infraestructure/postgres"
-	postgres "github.com/WelintonJunior/identity-access-management-go/infraestructure/postgres"
 	redis "github.com/WelintonJunior/identity-access-management-go/infraestructure/redis"
 	"github.com/WelintonJunior/identity-access-management-go/routes"
 	"github.com/WelintonJunior/identity-access-management-go/utils"
@@ -26,43 +25,43 @@ var apiPort int
 
 var initApiServerCmd = &cobra.Command{
 	Use:   "initApiServer",
-	Short: "Inicializa o serviço web de API",
-	Long:  "Comando para realizar a execução da aplicação",
+	Short: "Starts the API web server",
 	Run: func(cmd *cobra.Command, args []string) {
 		app := SetupApp(context.Background())
 
 		portStr := os.Getenv("API_PORT")
-
-		apiPort, err := strconv.Atoi(portStr)
+		port, err := strconv.Atoi(portStr)
 		if err != nil {
-			log.Fatalf("Variavel de ambiente API_PORT inválido: %v", err)
+			log.Fatalf("Invalid API_PORT environment variable: %v", err)
 		}
 
 		go func() {
-			runPort := fmt.Sprintf(":%d", apiPort)
-			if err := app.Listen(runPort); err != nil {
-				log.Panic(err)
+			addr := fmt.Sprintf(":%d", port)
+			if err := app.Listen(addr); err != nil {
+				log.Panicf("Server failed to start: %v", err)
 			}
 		}()
 
-		cancelChan := make(chan os.Signal, 1)
-		signal.Notify(cancelChan, os.Interrupt, syscall.SIGTERM)
+		// Wait for termination signal
+		sig := make(chan os.Signal, 1)
+		signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+		<-sig
 
-		<-cancelChan
-		fmt.Println("Gracefully shutdown")
-		_ = app.Shutdown()
+		log.Println("Shutting down gracefully...")
+		if err := app.Shutdown(); err != nil {
+			log.Printf("Error during shutdown: %v", err)
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(initApiServerCmd)
-	initApiServerCmd.Flags().IntVarP(&apiPort, "port", "p", apiPort, "Http server execution port")
+	initApiServerCmd.Flags().IntVarP(&apiPort, "port", "p", apiPort, "HTTP server port")
 }
 
 func SetupApp(ctx context.Context) *fiber.App {
-	err := utils.LoadEnvMem()
-	if err != nil {
-		log.Fatal("No .env file found")
+	if err := utils.LoadEnvMem(); err != nil {
+		log.Fatal("Environment variables could not be loaded")
 	}
 
 	app := fiber.New()
@@ -73,37 +72,32 @@ func SetupApp(ctx context.Context) *fiber.App {
 		AllowHeaders: "Content-Type, Authorization",
 	}))
 
-	_, err = postgres.NewSqlDbConnection(infraestructure.GetSqlConfig())
-
-	if err != nil {
-		fmt.Println("Erro ao conectar no Redis:", err)
+	if _, err := infraestructure.NewSqlDbConnection(infraestructure.GetSqlConfig()); err != nil {
+		log.Fatalf("Failed to connect to PostgreSQL: %v", err)
 	}
 
 	rdb := redis.InitRedis()
-
-	_, err = rdb.Ping(context.Background()).Result()
-	if err != nil {
-		fmt.Println("Erro ao conectar no Redis:", err)
+	if _, err := rdb.Ping(ctx).Result(); err != nil {
+		log.Fatalf("Failed to connect to Redis: %v", err)
 	} else {
-		fmt.Println("Conectado ao Redis com sucesso!")
+		log.Println("Connected to Redis successfully")
 	}
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"success": true,
-			"message": "You are at the endpoint",
+			"message": "API is running",
 		})
 	})
 
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
-	authRoutes := app.Group("api/v1")
+	auth := app.Group("/api/v1")
+	routes.AuthRoutes(auth)
 
-	routes.AuthRoutes(authRoutes)
-
-	apiV1 := app.Group("api/v1", middlewares.JwtAuth())
-	routes.UserRoutes(apiV1)
-	routes.ProductRoutes(apiV1)
+	protected := app.Group("/api/v1", middlewares.JwtAuth())
+	routes.UserRoutes(protected)
+	routes.ProductRoutes(protected)
 
 	return app
 }

@@ -40,6 +40,6 @@ func VerifyUser(session types.User) (string, string, error) {
 
 		return accessToken, refreshToken, nil
 	} else {
-		return "", "", errors.New("Senha digitada não confere")
+		return "", "", errors.New("Incorrect password")
 	}
 }

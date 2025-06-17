@@ -10,7 +10,6 @@ import (
 
 func JwtAuth() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// Deixar comentado para desenvolvimento
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
 			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
