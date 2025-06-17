@@ -50,6 +50,8 @@ definitions:
         type: string
       isActive:
         type: boolean
+      password:
+        type: string
       updatedAt:
         type: string
     type: object
@@ -67,198 +69,13 @@ info:
   title: WattsUp API
   version: "1.0"
 paths:
-  /api/v1/Product:
-    get:
-      consumes:
-      - application/json
-      description: Lista todos os Produtos cadastrados
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.ListProductResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Listar Produtos
-      tags:
-      - Product
-    post:
-      consumes:
-      - application/json
-      description: Cria um novo Produto
-      parameters:
-      - description: Dados do Produto
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/types.Product'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Criar Produto
-      tags:
-      - Product
-  /api/v1/Product/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Remove um Produto específico
-      parameters:
-      - description: ID do Produto
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Remover Produto por ID
-      tags:
-      - Product
-    get:
-      consumes:
-      - application/json
-      description: Retorna os dados de um Produto específico
-      parameters:
-      - description: ID do Produto
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.ProductResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Buscar Produto por ID
-      tags:
-      - Product
-    put:
-      consumes:
-      - application/json
-      description: Atualiza os dados de um Produto específico
-      parameters:
-      - description: ID do Produto
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Dados atualizados do Produto
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/types.Product'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.ProductResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Atualizar Produto por ID
-      tags:
-      - Product
   /api/v1/auth/login:
     post:
       consumes:
       - application/json
-      description: Gera access e refresh token
+      description: Generates access and refresh tokens
       parameters:
-      - description: Credenciais
+      - description: Credentials
         in: body
         name: request
         required: true
@@ -279,21 +96,27 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: Login do usuário
+      summary: User login
       tags:
       - Auth
   /api/v1/auth/refresh:
     get:
       consumes:
       - application/json
-      description: Gera novo access token com base no refresh token armazenado no
-        cookie HttpOnly
+      description: Generates new access token using the refresh token in HttpOnly
+        cookie
       produces:
       - application/json
       responses:
@@ -315,16 +138,16 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Atualiza o access token
+      summary: Refresh access token
       tags:
       - Auth
   /api/v1/auth/register:
     post:
       consumes:
       - application/json
-      description: Cria um novo registro de usuário no banco de dados
+      description: Creates a new user in the database
       parameters:
-      - description: Dados do usuário
+      - description: User data
         in: body
         name: request
         required: true
@@ -350,21 +173,21 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Cadastro do usuário
+      summary: User registration
       tags:
       - Auth
-  /api/v1/user:
+  /api/v1/products:
     get:
       consumes:
       - application/json
-      description: Lista todos os usuários cadastrados
+      description: Retrieves a list of all registered products
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.ListUserResponse'
+            $ref: '#/definitions/types.ListProductResponse'
         "400":
           description: Bad Request
           schema:
@@ -377,16 +200,51 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Listar Usuários
+      summary: List Products
       tags:
-      - User
-  /api/v1/user/{id}:
+      - Product
+    post:
+      consumes:
+      - application/json
+      description: Creates a new product in the system
+      parameters:
+      - description: Product data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/types.Product'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create Product
+      tags:
+      - Product
+  /api/v1/products/{id}:
     delete:
       consumes:
       - application/json
-      description: Remove um usuário específico
+      description: Removes a product by its ID
       parameters:
-      - description: ID do usuário
+      - description: Product ID
         in: path
         name: id
         required: true
@@ -418,15 +276,165 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Remover Usuário por ID
+      summary: Delete Product by ID
+      tags:
+      - Product
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a product's information by its ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ProductResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get Product by ID
+      tags:
+      - Product
+    put:
+      consumes:
+      - application/json
+      description: Updates the details of a specific product
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated product data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/types.Product'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ProductResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update Product by ID
+      tags:
+      - Product
+  /api/v1/users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all registered users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ListUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List Users
+      tags:
+      - User
+  /api/v1/users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete User by ID
       tags:
       - User
     get:
       consumes:
       - application/json
-      description: Retorna os dados de um usuário específico
+      description: Retrieves a specific user's details by their ID
       parameters:
-      - description: ID do usuário
+      - description: User ID
         in: path
         name: id
         required: true
@@ -456,20 +464,20 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Buscar Usuário por ID
+      summary: Get User by ID
       tags:
       - User
     put:
       consumes:
       - application/json
-      description: Atualiza os dados de um usuário específico
+      description: Updates a specific user's information
       parameters:
-      - description: ID do usuário
+      - description: User ID
         in: path
         name: id
         required: true
         type: string
-      - description: Dados atualizados do usuário
+      - description: Updated user data
         in: body
         name: request
         required: true
@@ -500,7 +508,7 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Atualizar Usuário por ID
+      summary: Update User by ID
       tags:
       - User
 securityDefinitions:

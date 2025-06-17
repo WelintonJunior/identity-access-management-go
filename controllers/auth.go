@@ -74,12 +74,19 @@ func Login() fiber.Handler {
 // @Router       /api/v1/auth/register [post]
 func Register() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		var req types.User
+		var req types.UserRegisterRequest
 
 		if err := c.BodyParser(&req); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"success": false,
 				"error":   ErrMalformedRequest,
+			})
+		}
+
+		if req.Password != req.RepeatPassword {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"error":   "Passwords do not match",
 			})
 		}
 

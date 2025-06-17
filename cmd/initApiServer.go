@@ -92,6 +92,8 @@ func SetupApp(ctx context.Context) *fiber.App {
 
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
+	// auth.SetupSSO()
+
 	auth := app.Group("/api/v1")
 	routes.AuthRoutes(auth)
 

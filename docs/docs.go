@@ -15,288 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/Product": {
-            "get": {
-                "description": "Lista todos os Produtos cadastrados",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Product"
-                ],
-                "summary": "Listar Produtos",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.ListProductResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Cria um novo Produto",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Product"
-                ],
-                "summary": "Criar Produto",
-                "parameters": [
-                    {
-                        "description": "Dados do Produto",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.Product"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/Product/{id}": {
-            "get": {
-                "description": "Retorna os dados de um Produto específico",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Product"
-                ],
-                "summary": "Buscar Produto por ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID do Produto",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.ProductResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Atualiza os dados de um Produto específico",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Product"
-                ],
-                "summary": "Atualizar Produto por ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID do Produto",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Dados atualizados do Produto",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.Product"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.ProductResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Remove um Produto específico",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Product"
-                ],
-                "summary": "Remover Produto por ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID do Produto",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/auth/login": {
             "post": {
-                "description": "Gera access e refresh token",
+                "description": "Generates access and refresh tokens",
                 "consumes": [
                     "application/json"
                 ],
@@ -306,10 +27,10 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Login do usuário",
+                "summary": "User login",
                 "parameters": [
                     {
-                        "description": "Credenciais",
+                        "description": "Credentials",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -337,6 +58,15 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -351,7 +81,7 @@ const docTemplate = `{
         },
         "/api/v1/auth/refresh": {
             "get": {
-                "description": "Gera novo access token com base no refresh token armazenado no cookie HttpOnly",
+                "description": "Generates new access token using the refresh token in HttpOnly cookie",
                 "consumes": [
                     "application/json"
                 ],
@@ -361,7 +91,7 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Atualiza o access token",
+                "summary": "Refresh access token",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -395,7 +125,7 @@ const docTemplate = `{
         },
         "/api/v1/auth/register": {
             "post": {
-                "description": "Cria um novo registro de usuário no banco de dados",
+                "description": "Creates a new user in the database",
                 "consumes": [
                     "application/json"
                 ],
@@ -405,10 +135,10 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Cadastro do usuário",
+                "summary": "User registration",
                 "parameters": [
                     {
-                        "description": "Dados do usuário",
+                        "description": "User data",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -446,9 +176,288 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user": {
+        "/api/v1/products": {
             "get": {
-                "description": "Lista todos os usuários cadastrados",
+                "description": "Retrieves a list of all registered products",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product"
+                ],
+                "summary": "List Products",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.ListProductResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a new product in the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product"
+                ],
+                "summary": "Create Product",
+                "parameters": [
+                    {
+                        "description": "Product data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.Product"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/products/{id}": {
+            "get": {
+                "description": "Retrieves a product's information by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product"
+                ],
+                "summary": "Get Product by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Product ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.ProductResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Updates the details of a specific product",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product"
+                ],
+                "summary": "Update Product by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Product ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated product data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.Product"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.ProductResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Removes a product by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product"
+                ],
+                "summary": "Delete Product by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Product ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users": {
+            "get": {
+                "description": "Retrieves a list of all registered users",
                 "consumes": [
                     "application/json"
                 ],
@@ -458,7 +467,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Listar Usuários",
+                "summary": "List Users",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -487,9 +496,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user/{id}": {
+        "/api/v1/users/{id}": {
             "get": {
-                "description": "Retorna os dados de um usuário específico",
+                "description": "Retrieves a specific user's details by their ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -499,11 +508,11 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Buscar Usuário por ID",
+                "summary": "Get User by ID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID do usuário",
+                        "description": "User ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -546,7 +555,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Atualiza os dados de um usuário específico",
+                "description": "Updates a specific user's information",
                 "consumes": [
                     "application/json"
                 ],
@@ -556,17 +565,17 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Atualizar Usuário por ID",
+                "summary": "Update User by ID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID do usuário",
+                        "description": "User ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Dados atualizados do usuário",
+                        "description": "Updated user data",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -612,7 +621,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Remove um usuário específico",
+                "description": "Deletes a user by their ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -622,11 +631,11 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Remover Usuário por ID",
+                "summary": "Delete User by ID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID do usuário",
+                        "description": "User ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -750,6 +759,9 @@ const docTemplate = `{
                 },
                 "isActive": {
                     "type": "boolean"
+                },
+                "password": {
+                    "type": "string"
                 },
                 "updatedAt": {
                     "type": "string"
