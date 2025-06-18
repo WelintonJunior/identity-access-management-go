@@ -42,6 +42,11 @@ var migrateCmd = &cobra.Command{
 			if err := migrationService.MigrateApply(); err != nil {
 				log.Fatalf("Failed to apply migrations: %v", err)
 			}
+
+			if err := infraestructure.Seed(db); err != nil {
+				log.Fatal("Erro ao executar seed:", err)
+			}
+
 			log.Println("Migrations applied successfully")
 		case "down":
 			if err := migrationService.MigrateRevert(); err != nil {

@@ -46,6 +46,8 @@ func Login() fiber.Handler {
 			})
 		}
 
+		c.Locals("email", req.Email)
+
 		c.Cookie(&fiber.Cookie{
 			Name:     "refresh_token",
 			Value:    refreshToken,

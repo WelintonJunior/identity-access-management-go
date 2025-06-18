@@ -2,8 +2,11 @@ package infraestructure
 
 import (
 	"errors"
+	"log"
+	"time"
 
 	"github.com/WelintonJunior/identity-access-management-go/types"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -46,4 +49,111 @@ func (r *PostgresMigrateService) MigrateRevert() error {
 		&types.UserRole{},
 		&types.Product{},
 	)
+}
+
+func Seed(db *gorm.DB) error {
+	var count int64
+	db.Model(&types.User{}).Count(&count)
+	if count > 0 {
+		log.Println("Seed: já existem dados no banco. Pulando seed.")
+		return nil
+	}
+
+	adminRole := types.Role{
+		Base: types.Base{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+		},
+		Name:        "admin",
+		Description: "Administrador do sistema",
+	}
+	userRole := types.Role{
+		Base: types.Base{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+		},
+		Name:        "user",
+		Description: "Usuário padrão",
+	}
+
+	if err := db.Create(&[]types.Role{adminRole, userRole}).Error; err != nil {
+		return err
+	}
+
+	readPermission := types.Permission{
+		Base: types.Base{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+		},
+		Name:        "read",
+		Description: "Permissão para leitura",
+	}
+	writePermission := types.Permission{
+		Base: types.Base{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+		},
+		Name:        "write",
+		Description: "Permissão para escrita",
+	}
+	deletePermission := types.Permission{
+		Base: types.Base{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+		},
+		Name:        "delete",
+		Description: "Permissão para deletar",
+	}
+	adminPermission := types.Permission{
+		Base: types.Base{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+		},
+		Name:        "admin",
+		Description: "Permissão de acesso administrativo",
+	}
+
+	// Cria TODAS as permissões, incluindo a adminPermission
+	if err := db.Create(&[]types.Permission{readPermission, writePermission, deletePermission, adminPermission}).Error; err != nil {
+		return err
+	}
+
+	// Associa permissões às roles
+	rolePermissions := []types.RolePermission{
+		{RoleID: adminRole.ID, PermissionID: readPermission.ID},
+		{RoleID: adminRole.ID, PermissionID: writePermission.ID},
+		{RoleID: adminRole.ID, PermissionID: deletePermission.ID},
+		{RoleID: adminRole.ID, PermissionID: adminPermission.ID}, // associa admin perm à role admin
+		{RoleID: userRole.ID, PermissionID: readPermission.ID},
+	}
+
+	if err := db.Create(&rolePermissions).Error; err != nil {
+		return err
+	}
+
+	adminUser := types.User{
+		Base: types.Base{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+		},
+		FullName: "Administrador",
+		Email:    "admin@admin.com",
+		Password: "$2a$10$UfwNso7PvDUOWAgkMrhkMe1fi16zYHoJIZ/HvWKURQdKWzzL.Xh8G", // bcrypt hash da senha
+		IsActive: true,
+	}
+
+	if err := db.Create(&adminUser).Error; err != nil {
+		return err
+	}
+
+	userRoleLink := types.UserRole{
+		UserID: adminUser.ID,
+		RoleID: adminRole.ID,
+	}
+	if err := db.Create(&userRoleLink).Error; err != nil {
+		return err
+	}
+
+	log.Println("Seed: dados inseridos com sucesso.")
+	return nil
 }

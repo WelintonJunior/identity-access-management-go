@@ -98,8 +98,12 @@ func SetupApp(ctx context.Context) *fiber.App {
 	routes.AuthRoutes(auth)
 
 	protected := app.Group("/api/v1", middlewares.JwtAuth())
-	routes.UserRoutes(protected)
 	routes.ProductRoutes(protected)
+
+	adminGroup := protected.Group("/admin")
+	adminGroup.Use(middlewares.RequireAuth())
+	adminGroup.Use(middlewares.RequirePermission("admin"))
+	routes.UserRoutes(adminGroup)
 
 	return app
 }

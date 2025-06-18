@@ -5,7 +5,7 @@ import "github.com/google/uuid"
 type User struct {
 	Base
 	Email    string `json:"email" gorm:"type:varchar(100);uniqueIndex;not null"`
-	Password string `json:"password" gorm:"type:varchar(255);not null" json:"-"`
+	Password string `json:"password" gorm:"type:varchar(255);not null"`
 	FullName string `json:"full_name" gorm:"type:varchar(100);not null"`
 	IsActive bool
 }
