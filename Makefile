@@ -14,7 +14,7 @@ sql_up:
 	@echo "Iniciando novo container postgres com volume persistente..."
 	@docker run --name postgres \
 		-e POSTGRES_PASSWORD=1234 \
-		-e POSTGRES_DB=wattsup \
+		-e POSTGRES_DB=iam \
 		-v postgres_data:/var/lib/postgresql/data \
 		-p 5432:5432 \
 		-d postgres

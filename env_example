@@ -3,7 +3,7 @@ API_PORT="3000"
 DB_HOST="localhost"
 DB_USER="postgres"
 DB_PASS="1234"
-DB_NAME="wattsup"
+DB_NAME="iam"
 DB_PORT="5432"
 
 REDIS_HOST="localhost:6379"

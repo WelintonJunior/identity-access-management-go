@@ -3,9 +3,7 @@ package middlewares
 import (
 	"context"
 	"errors"
-	"strings"
 
-	"github.com/WelintonJunior/identity-access-management-go/cmd/auth"
 	infraestructure "github.com/WelintonJunior/identity-access-management-go/infraestructure/postgres"
 	"github.com/WelintonJunior/identity-access-management-go/types"
 	"github.com/gofiber/fiber/v2"
@@ -51,49 +49,19 @@ func HasPermission(ctx context.Context, userID uuid.UUID, permissionName string)
 	return count > 0, nil
 }
 
-func RequireAuth() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		authHeader := c.Get("Authorization")
-		if authHeader == "" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "token de autenticação não fornecido",
-			})
-		}
-
-		tokenParts := strings.Split(authHeader, " ")
-		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "formato do token inválido",
-			})
-		}
-
-		tokenStr := tokenParts[1]
-
-		email, err := auth.VerifyToken(tokenStr)
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "token inválido ou expirado",
-			})
-		}
-
-		c.Locals("email", email)
-		return c.Next()
-	}
-}
-
 func RequirePermission(permission string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		emailRaw := c.Locals("email")
 		if emailRaw == nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "usuário não autenticado",
+				"error": "unauthenticated user",
 			})
 		}
 
 		email, ok := emailRaw.(string)
 		if !ok || email == "" {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "email inválido no contexto",
+				"error": "invalid email in context",
 			})
 		}
 
@@ -102,24 +70,24 @@ func RequirePermission(permission string) fiber.Handler {
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-					"error": "usuário não encontrado",
+					"error": "user not found",
 				})
 			}
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "erro interno ao buscar usuário",
+				"error": "internal error while fetching user",
 			})
 		}
 
 		ok, err = HasPermission(c.Context(), user.ID, permission)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "erro interno no servidor",
+				"error": "internal server error",
 			})
 		}
 
 		if !ok {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"error": "permissão negada",
+				"error": "permission denied",
 			})
 		}
 

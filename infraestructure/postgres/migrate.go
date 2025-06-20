@@ -35,6 +35,7 @@ func (r *PostgresMigrateService) MigrateApply() error {
 		&types.RolePermission{},
 		&types.UserRole{},
 		&types.Product{},
+		&types.LoginAttempt{},
 	)
 }
 
@@ -48,6 +49,7 @@ func (r *PostgresMigrateService) MigrateRevert() error {
 		&types.RolePermission{},
 		&types.UserRole{},
 		&types.Product{},
+		&types.LoginAttempt{},
 	)
 }
 
@@ -55,7 +57,7 @@ func Seed(db *gorm.DB) error {
 	var count int64
 	db.Model(&types.User{}).Count(&count)
 	if count > 0 {
-		log.Println("Seed: já existem dados no banco. Pulando seed.")
+		log.Println("Seed: data already exists in the database. Skipping seeding.")
 		return nil
 	}
 
@@ -65,7 +67,7 @@ func Seed(db *gorm.DB) error {
 			CreatedAt: time.Now(),
 		},
 		Name:        "admin",
-		Description: "Administrador do sistema",
+		Description: "System administrator",
 	}
 	userRole := types.Role{
 		Base: types.Base{
@@ -73,7 +75,7 @@ func Seed(db *gorm.DB) error {
 			CreatedAt: time.Now(),
 		},
 		Name:        "user",
-		Description: "Usuário padrão",
+		Description: "Default user",
 	}
 
 	if err := db.Create(&[]types.Role{adminRole, userRole}).Error; err != nil {
@@ -86,7 +88,7 @@ func Seed(db *gorm.DB) error {
 			CreatedAt: time.Now(),
 		},
 		Name:        "read",
-		Description: "Permissão para leitura",
+		Description: "Permission to read data",
 	}
 	writePermission := types.Permission{
 		Base: types.Base{
@@ -94,7 +96,7 @@ func Seed(db *gorm.DB) error {
 			CreatedAt: time.Now(),
 		},
 		Name:        "write",
-		Description: "Permissão para escrita",
+		Description: "Permission to write data",
 	}
 	deletePermission := types.Permission{
 		Base: types.Base{
@@ -102,7 +104,7 @@ func Seed(db *gorm.DB) error {
 			CreatedAt: time.Now(),
 		},
 		Name:        "delete",
-		Description: "Permissão para deletar",
+		Description: "Permission to delete data",
 	}
 	adminPermission := types.Permission{
 		Base: types.Base{
@@ -110,20 +112,20 @@ func Seed(db *gorm.DB) error {
 			CreatedAt: time.Now(),
 		},
 		Name:        "admin",
-		Description: "Permissão de acesso administrativo",
+		Description: "Permission for administrative access",
 	}
 
-	// Cria TODAS as permissões, incluindo a adminPermission
-	if err := db.Create(&[]types.Permission{readPermission, writePermission, deletePermission, adminPermission}).Error; err != nil {
+	if err := db.Create(&[]types.Permission{
+		readPermission, writePermission, deletePermission, adminPermission,
+	}).Error; err != nil {
 		return err
 	}
 
-	// Associa permissões às roles
 	rolePermissions := []types.RolePermission{
 		{RoleID: adminRole.ID, PermissionID: readPermission.ID},
 		{RoleID: adminRole.ID, PermissionID: writePermission.ID},
 		{RoleID: adminRole.ID, PermissionID: deletePermission.ID},
-		{RoleID: adminRole.ID, PermissionID: adminPermission.ID}, // associa admin perm à role admin
+		{RoleID: adminRole.ID, PermissionID: adminPermission.ID},
 		{RoleID: userRole.ID, PermissionID: readPermission.ID},
 	}
 
@@ -136,24 +138,35 @@ func Seed(db *gorm.DB) error {
 			ID:        uuid.New(),
 			CreatedAt: time.Now(),
 		},
-		FullName: "Administrador",
+		FullName: "Admin User",
 		Email:    "admin@admin.com",
-		Password: "$2a$10$UfwNso7PvDUOWAgkMrhkMe1fi16zYHoJIZ/HvWKURQdKWzzL.Xh8G", // bcrypt hash da senha
+		Password: "$2a$10$UfwNso7PvDUOWAgkMrhkMe1fi16zYHoJIZ/HvWKURQdKWzzL.Xh8G",
+		IsActive: true,
+	}
+	normalUser := types.User{
+		Base: types.Base{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+		},
+		FullName: "Normal User",
+		Email:    "user@user.com",
+		Password: "$2a$10$UfwNso7PvDUOWAgkMrhkMe1fi16zYHoJIZ/HvWKURQdKWzzL.Xh8G",
 		IsActive: true,
 	}
 
-	if err := db.Create(&adminUser).Error; err != nil {
+	if err := db.Create(&[]types.User{adminUser, normalUser}).Error; err != nil {
 		return err
 	}
 
-	userRoleLink := types.UserRole{
-		UserID: adminUser.ID,
-		RoleID: adminRole.ID,
+	userRoles := []types.UserRole{
+		{UserID: adminUser.ID, RoleID: adminRole.ID},
+		{UserID: normalUser.ID, RoleID: userRole.ID},
 	}
-	if err := db.Create(&userRoleLink).Error; err != nil {
+
+	if err := db.Create(&userRoles).Error; err != nil {
 		return err
 	}
 
-	log.Println("Seed: dados inseridos com sucesso.")
+	log.Println("Seed: initial data inserted successfully.")
 	return nil
 }

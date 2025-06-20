@@ -94,14 +94,17 @@ func SetupApp(ctx context.Context) *fiber.App {
 
 	// auth.SetupSSO()
 
+	// Rotas públicas de autenticação
 	auth := app.Group("/api/v1")
 	routes.AuthRoutes(auth)
 
-	protected := app.Group("/api/v1", middlewares.JwtAuth())
+	// Rotas protegidas, exigem JWT e autenticação
+	protected := app.Group("/api/v1")
+	protected.Use(middlewares.RequireAuth())
 	routes.ProductRoutes(protected)
 
+	// Rotas administrativas, requerem permissão 'admin'
 	adminGroup := protected.Group("/admin")
-	adminGroup.Use(middlewares.RequireAuth())
 	adminGroup.Use(middlewares.RequirePermission("admin"))
 	routes.UserRoutes(adminGroup)
 

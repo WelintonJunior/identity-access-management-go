@@ -44,7 +44,7 @@ var migrateCmd = &cobra.Command{
 			}
 
 			if err := infraestructure.Seed(db); err != nil {
-				log.Fatal("Erro ao executar seed:", err)
+				log.Fatal("Failed to apply Seed:", err)
 			}
 
 			log.Println("Migrations applied successfully")

@@ -38,11 +38,11 @@ func Login() fiber.Handler {
 			})
 		}
 
-		accessToken, refreshToken, err := services.VerifyUser(req)
+		accessToken, refreshToken, err := services.VerifyUser(c, req)
 		if err != nil {
 			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
 				"success": false,
-				"error":   "Email or password is incorrect",
+				"error":   err.Error(),
 			})
 		}
 

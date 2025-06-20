@@ -13,7 +13,7 @@ var RedisDb *redis.Client
 func InitRedis() *redis.Client {
 	db, err := strconv.Atoi(os.Getenv("REDIS_DB"))
 	if err != nil {
-		fmt.Println("Erro ao converter REDIS_DB para inteiro:", err)
+		fmt.Println("Failed to convert REDIS_DB to int:", err)
 		db = 0
 	}
 

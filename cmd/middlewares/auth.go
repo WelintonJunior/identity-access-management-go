@@ -1,43 +1,38 @@
 package middlewares
 
 import (
-	"net/http"
 	"strings"
 
 	"github.com/WelintonJunior/identity-access-management-go/cmd/auth"
 	"github.com/gofiber/fiber/v2"
 )
 
-func JwtAuth() fiber.Handler {
+func RequireAuth() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
-			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
-				"success": false,
-				"error":   "Authorization header missing",
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "authentication token not provided",
 			})
 		}
 
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
-				"success": false,
-				"error":   "Authorization header format must be Bearer {token}",
+		tokenParts := strings.Split(authHeader, " ")
+		if len(tokenParts) != 2 || strings.ToLower(tokenParts[0]) != "bearer" {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid token format",
 			})
 		}
 
-		token := parts[1]
+		tokenStr := tokenParts[1]
 
-		email, err := auth.VerifyToken(token)
+		email, err := auth.VerifyToken(tokenStr)
 		if err != nil {
-			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
-				"success": false,
-				"error":   "Invalid or expired token",
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid or expired token",
 			})
 		}
 
-		c.Locals("userEmail", email)
-
+		c.Locals("email", email)
 		return c.Next()
 	}
 }
